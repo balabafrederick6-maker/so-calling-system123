@@ -1,0 +1,1245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>S.O Number Calling System</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0c10;
+    --panel: #0f1318;
+    --card: #141a22;
+    --border: #1e2d3d;
+    --accent: #00d4ff;
+    --accent2: #ff6b35;
+    --green: #00ff9d;
+    --red: #ff3b5c;
+    --text: #c8d8e8;
+    --muted: #4a6080;
+    --display-bg: #050810;
+    --led: #00ffcc;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Rajdhani', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ─── GRID BACKGROUND ─── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .screen { display: none; position: relative; z-index: 1; }
+  .screen.active { display: flex; }
+
+  /* ─── LOGIN SCREEN ─── */
+  #loginScreen {
+    min-height: 100vh;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .login-box {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-top: 3px solid var(--accent);
+    padding: 48px 40px;
+    width: 420px;
+    position: relative;
+    box-shadow: 0 0 60px rgba(0,212,255,0.08), 0 30px 60px rgba(0,0,0,0.5);
+  }
+
+  .login-box::before {
+    content: '';
+    position: absolute;
+    top: -3px; left: 40px;
+    width: 60px; height: 3px;
+    background: var(--accent2);
+  }
+
+  .system-logo {
+    text-align: center;
+    margin-bottom: 36px;
+  }
+
+  .system-logo .title {
+    font-family: 'Orbitron', monospace;
+    font-size: 22px;
+    font-weight: 900;
+    color: var(--accent);
+    letter-spacing: 3px;
+    text-shadow: 0 0 20px rgba(0,212,255,0.5);
+  }
+
+  .system-logo .sub {
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 4px;
+    margin-top: 4px;
+    text-transform: uppercase;
+  }
+
+  .login-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 28px;
+    gap: 4px;
+  }
+
+  .login-tab {
+    flex: 1;
+    padding: 10px;
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    cursor: pointer;
+    text-transform: uppercase;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: all 0.2s;
+  }
+
+  .login-tab.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+
+  .login-form { display: none; flex-direction: column; gap: 16px; }
+  .login-form.active { display: flex; }
+
+  label {
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--muted);
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 6px;
+  }
+
+  input, select {
+    width: 100%;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 12px 14px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    appearance: none;
+  }
+
+  input:focus, select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(0,212,255,0.1);
+  }
+
+  select option { background: var(--panel); }
+
+  .btn {
+    padding: 13px 24px;
+    border: none;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #000;
+  }
+
+  .btn-primary:hover {
+    background: #fff;
+    box-shadow: 0 0 30px rgba(0,212,255,0.4);
+  }
+
+  .btn-danger {
+    background: var(--red);
+    color: #fff;
+  }
+
+  .btn-success {
+    background: var(--green);
+    color: #000;
+  }
+
+  .btn-outline {
+    background: transparent;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+  }
+
+  .btn-outline:hover {
+    background: rgba(0,212,255,0.1);
+  }
+
+  .btn-sm { padding: 8px 16px; font-size: 12px; }
+  .btn-block { width: 100%; }
+
+  .error-msg {
+    color: var(--red);
+    font-size: 12px;
+    letter-spacing: 1px;
+    text-align: center;
+    min-height: 18px;
+  }
+
+  /* ─── HEADER ─── */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 28px;
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .header-logo {
+    font-family: 'Orbitron', monospace;
+    font-size: 16px;
+    font-weight: 900;
+    color: var(--accent);
+    letter-spacing: 2px;
+    text-shadow: 0 0 10px rgba(0,212,255,0.4);
+  }
+
+  .header-user {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .badge {
+    padding: 4px 12px;
+    font-size: 10px;
+    letter-spacing: 2px;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  .badge-admin { background: rgba(255,107,53,0.15); color: var(--accent2); border: 1px solid var(--accent2); }
+  .badge-user { background: rgba(0,212,255,0.1); color: var(--accent); border: 1px solid var(--accent); }
+
+  .user-name { font-family: 'Share Tech Mono', monospace; font-size: 14px; color: var(--text); }
+
+  /* ─── MAIN LAYOUT ─── */
+  #adminScreen, #userScreen {
+    flex-direction: column;
+    min-height: 100vh;
+  }
+
+  .main-content {
+    padding: 28px;
+    flex: 1;
+    display: grid;
+    gap: 24px;
+  }
+
+  .admin-grid {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto;
+  }
+
+  /* ─── CARDS ─── */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 24px;
+    position: relative;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 3px;
+    height: 100%;
+    background: var(--accent);
+  }
+
+  .card.orange::before { background: var(--accent2); }
+  .card.green::before { background: var(--green); }
+  .card.red::before { background: var(--red); }
+
+  .card-title {
+    font-family: 'Orbitron', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* ─── LED DISPLAY ─── */
+  .so-display {
+    background: var(--display-bg);
+    border: 1px solid #0a1520;
+    padding: 32px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    box-shadow: inset 0 0 40px rgba(0,0,0,0.8);
+  }
+
+  .so-display::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.1) 2px,
+      rgba(0,0,0,0.1) 4px
+    );
+    pointer-events: none;
+  }
+
+  .so-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 13px;
+    letter-spacing: 5px;
+    color: rgba(0,255,204,0.5);
+    margin-bottom: 12px;
+    text-transform: uppercase;
+  }
+
+  .so-number {
+    font-family: 'Orbitron', monospace;
+    font-size: 72px;
+    font-weight: 900;
+    color: var(--led);
+    text-shadow:
+      0 0 10px var(--led),
+      0 0 30px rgba(0,255,204,0.6),
+      0 0 60px rgba(0,255,204,0.3);
+    letter-spacing: 8px;
+    line-height: 1;
+    transition: all 0.3s;
+    min-height: 86px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .so-number.flash {
+    animation: ledFlash 0.15s ease 4;
+  }
+
+  @keyframes ledFlash {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.1; }
+  }
+
+  .so-number.empty {
+    color: rgba(0,255,204,0.1);
+    text-shadow: none;
+    font-size: 28px;
+    letter-spacing: 4px;
+  }
+
+  .so-status {
+    margin-top: 12px;
+    font-size: 11px;
+    letter-spacing: 4px;
+    color: rgba(0,255,204,0.4);
+    text-transform: uppercase;
+  }
+
+  /* ─── CALL BUTTON ─── */
+  .call-section {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+  }
+
+  .call-section input {
+    flex: 1;
+    font-family: 'Orbitron', monospace;
+    font-size: 20px;
+    font-weight: 700;
+    text-align: center;
+    letter-spacing: 4px;
+    color: var(--accent);
+    border-color: var(--accent);
+    background: rgba(0,212,255,0.05);
+  }
+
+  .btn-call {
+    background: var(--accent2);
+    color: #fff;
+    font-size: 13px;
+    letter-spacing: 2px;
+    padding: 12px 24px;
+    white-space: nowrap;
+    border: none;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+  }
+
+  .btn-call:hover { background: #ff8c5a; box-shadow: 0 0 20px rgba(255,107,53,0.4); }
+
+  /* ─── QUEUE TABLE ─── */
+  .queue-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 300px;
+    overflow-y: auto;
+  }
+
+  .queue-list::-webkit-scrollbar { width: 4px; }
+  .queue-list::-webkit-scrollbar-track { background: var(--panel); }
+  .queue-list::-webkit-scrollbar-thumb { background: var(--border); }
+
+  .queue-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--border);
+    transition: all 0.2s;
+  }
+
+  .queue-item.current {
+    border-left-color: var(--green);
+    background: rgba(0,255,157,0.05);
+  }
+
+  .queue-item.pending { border-left-color: var(--muted); }
+
+  .queue-item-num {
+    font-family: 'Orbitron', monospace;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: 2px;
+  }
+
+  .queue-item.current .queue-item-num { color: var(--green); }
+
+  .queue-item-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .queue-item-time {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .queue-status {
+    font-size: 10px;
+    letter-spacing: 2px;
+    font-weight: 700;
+    padding: 3px 8px;
+    text-transform: uppercase;
+  }
+
+  .status-active { background: rgba(0,255,157,0.1); color: var(--green); border: 1px solid var(--green); }
+  .status-pending { background: rgba(74,96,128,0.2); color: var(--muted); border: 1px solid var(--muted); }
+
+  .btn-remove { background: none; border: 1px solid var(--red); color: var(--red); cursor: pointer; padding: 4px 8px; font-size: 10px; transition: all 0.2s; font-family: 'Rajdhani', sans-serif; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
+  .btn-remove:hover { background: rgba(255,59,92,0.15); }
+
+  /* ─── USER MANAGEMENT ─── */
+  .user-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .user-table th {
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--muted);
+    text-transform: uppercase;
+    text-align: left;
+    padding: 0 12px 10px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .user-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid rgba(30,45,61,0.5);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 13px;
+  }
+
+  .user-table tr:last-child td { border-bottom: none; }
+
+  .add-user-form {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .add-user-form input { flex: 1; }
+
+  .online-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--green);
+    display: inline-block;
+    box-shadow: 0 0 6px var(--green);
+    margin-right: 6px;
+  }
+
+  /* ─── USER DISPLAY SCREEN ─── */
+  .user-display {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    gap: 32px;
+  }
+
+  .user-so-board {
+    width: 100%;
+    max-width: 700px;
+    background: var(--display-bg);
+    border: 2px solid rgba(0,255,204,0.2);
+    padding: 48px;
+    text-align: center;
+    box-shadow: 0 0 60px rgba(0,255,204,0.05), inset 0 0 80px rgba(0,0,0,0.5);
+    position: relative;
+  }
+
+  .user-so-board::before {
+    content: 'NOW CALLING';
+    position: absolute;
+    top: 16px; left: 50%; transform: translateX(-50%);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 6px;
+    color: rgba(0,255,204,0.3);
+  }
+
+  .user-so-board::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.08) 3px, rgba(0,0,0,0.08) 4px);
+    pointer-events: none;
+  }
+
+  .user-so-number {
+    font-family: 'Orbitron', monospace;
+    font-size: 96px;
+    font-weight: 900;
+    color: var(--led);
+    text-shadow: 0 0 20px var(--led), 0 0 60px rgba(0,255,204,0.5), 0 0 100px rgba(0,255,204,0.2);
+    letter-spacing: 12px;
+    line-height: 1;
+    min-height: 110px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 1;
+  }
+
+  .user-so-number.empty {
+    font-size: 24px;
+    letter-spacing: 4px;
+    color: rgba(0,255,204,0.12);
+    text-shadow: none;
+  }
+
+  .user-so-number.flash { animation: ledFlash 0.15s ease 6; }
+
+  .user-queue-panel {
+    width: 100%;
+    max-width: 700px;
+  }
+
+  .recent-label {
+    font-family: 'Orbitron', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: var(--muted);
+    margin-bottom: 12px;
+    text-transform: uppercase;
+  }
+
+  .recent-chips {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .chip {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 13px;
+    padding: 6px 14px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    letter-spacing: 2px;
+  }
+
+  .chip.active {
+    border-color: var(--green);
+    color: var(--green);
+    background: rgba(0,255,157,0.05);
+  }
+
+  /* ─── TICKER ─── */
+  .ticker {
+    background: rgba(0,212,255,0.05);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 8px 0;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .ticker-track {
+    display: flex;
+    gap: 40px;
+    animation: ticker 20s linear infinite;
+    white-space: nowrap;
+  }
+
+  @keyframes ticker {
+    0% { transform: translateX(100vw); }
+    100% { transform: translateX(-100%); }
+  }
+
+  .ticker-item {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 3px;
+    color: var(--muted);
+  }
+
+  .ticker-item span { color: var(--accent); }
+
+  /* ─── TOAST ─── */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--card);
+    border: 1px solid var(--green);
+    border-left: 4px solid var(--green);
+    padding: 14px 20px;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 13px;
+    color: var(--green);
+    transform: translateX(120%);
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    max-width: 320px;
+    box-shadow: 0 0 30px rgba(0,255,157,0.15);
+  }
+
+  .toast.show { transform: translateX(0); }
+  .toast.error { border-color: var(--red); color: var(--red); box-shadow: 0 0 30px rgba(255,59,92,0.15); }
+
+  /* ─── VOICE INDICATOR ─── */
+  .voice-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--muted);
+    text-transform: uppercase;
+    padding: 8px 16px;
+    border: 1px solid var(--border);
+  }
+
+  .voice-bars {
+    display: flex;
+    gap: 2px;
+    align-items: flex-end;
+    height: 16px;
+  }
+
+  .voice-bar {
+    width: 3px;
+    background: var(--muted);
+    border-radius: 1px;
+    transition: all 0.1s;
+  }
+
+  .voice-indicator.speaking .voice-bar { background: var(--accent2); }
+  .voice-indicator.speaking .voice-bar:nth-child(1) { animation: bar 0.4s ease infinite; }
+  .voice-indicator.speaking .voice-bar:nth-child(2) { animation: bar 0.4s ease 0.1s infinite; }
+  .voice-indicator.speaking .voice-bar:nth-child(3) { animation: bar 0.4s ease 0.2s infinite; }
+  .voice-indicator.speaking .voice-bar:nth-child(4) { animation: bar 0.4s ease 0.1s infinite; }
+  .voice-indicator.speaking .voice-bar:nth-child(5) { animation: bar 0.4s ease 0s infinite; }
+
+  @keyframes bar {
+    0%, 100% { height: 4px; }
+    50% { height: 14px; }
+  }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 900px) {
+    .admin-grid { grid-template-columns: 1fr; }
+    .login-box { width: 90%; }
+    .user-so-number { font-size: 64px; }
+    .so-number { font-size: 52px; }
+  }
+
+  /* ─── SCAN LINE EFFECT ─── */
+  @keyframes scanline {
+    0% { transform: translateY(-100%); }
+    100% { transform: translateY(100vh); }
+  }
+
+  .scanline {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(0,212,255,0.1), transparent);
+    animation: scanline 8s linear infinite;
+    pointer-events: none;
+    z-index: 9990;
+  }
+
+  .col-span-2 { grid-column: span 2; }
+  @media (max-width: 900px) { .col-span-2 { grid-column: span 1; } }
+</style>
+</head>
+<body>
+
+<div class="scanline"></div>
+
+<!-- ═══ LOGIN SCREEN ═══ -->
+<div id="loginScreen" class="screen active">
+  <div class="login-box">
+    <div class="system-logo">
+      <div class="title">S.O SYSTEM</div>
+      <div class="sub">Service Order Calling Station</div>
+    </div>
+
+    <div class="login-tabs">
+      <button class="login-tab active" onclick="switchTab('user')">User</button>
+      <button class="login-tab" onclick="switchTab('admin')">Admin</button>
+    </div>
+
+    <!-- USER LOGIN -->
+    <div id="userLoginForm" class="login-form active">
+      <div>
+        <label>Select Your Name</label>
+        <select id="userSelect">
+          <option value="">-- Select Name --</option>
+        </select>
+      </div>
+      <button class="btn btn-primary btn-block" onclick="loginUser()">Enter Display</button>
+      <div class="error-msg" id="userError"></div>
+    </div>
+
+    <!-- ADMIN LOGIN -->
+    <div id="adminLoginForm" class="login-form">
+      <div>
+        <label>Admin Password</label>
+        <input type="password" id="adminPass" placeholder="Enter password" onkeydown="if(event.key==='Enter')loginAdmin()">
+      </div>
+      <button class="btn btn-primary btn-block" onclick="loginAdmin()">Access Admin Panel</button>
+      <div class="error-msg" id="adminError"></div>
+      <div style="text-align:center;font-size:11px;color:var(--muted);letter-spacing:1px;">Default: admin123</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ ADMIN SCREEN ═══ -->
+<div id="adminScreen" class="screen">
+  <div class="header">
+    <div class="header-logo">S.O ADMIN PANEL</div>
+    <div class="header-user">
+      <div id="voiceIndicator" class="voice-indicator">
+        <div class="voice-bars">
+          <div class="voice-bar" style="height:8px"></div>
+          <div class="voice-bar" style="height:12px"></div>
+          <div class="voice-bar" style="height:6px"></div>
+          <div class="voice-bar" style="height:14px"></div>
+          <div class="voice-bar" style="height:4px"></div>
+        </div>
+        <span id="voiceStatus">Voice Ready</span>
+      </div>
+      <span class="badge badge-admin">Admin</span>
+      <button class="btn btn-outline btn-sm" onclick="logout()">Logout</button>
+    </div>
+  </div>
+
+  <div class="main-content admin-grid">
+
+    <!-- CURRENT DISPLAY -->
+    <div class="card green">
+      <div class="card-title">📡 Live Display Board</div>
+      <div class="so-display">
+        <div class="so-label">S.O NUMBER</div>
+        <div class="so-number empty" id="adminCurrentDisplay">- - - -</div>
+        <div class="so-status" id="adminDisplayStatus">WAITING FOR INPUT</div>
+      </div>
+      <div class="call-section">
+        <input type="text" id="soInput" placeholder="Enter S.O number" maxlength="8"
+          oninput="this.value=this.value.replace(/[^0-9]/g,'')"
+          onkeydown="if(event.key==='Enter')callNumber()">
+        <button class="btn-call" onclick="callNumber()">▶ CALL NUMBER</button>
+      </div>
+    </div>
+
+    <!-- USER MANAGEMENT -->
+    <div class="card orange">
+      <div class="card-title">👥 User Management</div>
+      <div class="add-user-form">
+        <input type="text" id="newUserInput" placeholder="Enter username (e.g. mot.x)" maxlength="20"
+          onkeydown="if(event.key==='Enter')addUser()">
+        <button class="btn btn-primary btn-sm" onclick="addUser()">+ Add</button>
+      </div>
+      <div style="max-height:220px;overflow-y:auto;">
+        <table class="user-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Username</th>
+              <th>Role</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="userTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- QUEUE MANAGEMENT -->
+    <div class="card col-span-2">
+      <div class="card-title" style="display:flex;justify-content:space-between;align-items:center;">
+        <span>📋 S.O Queue History</span>
+        <button class="btn btn-outline btn-sm" onclick="clearQueue()" style="font-size:10px;">Clear All</button>
+      </div>
+      <div class="queue-list" id="adminQueue">
+        <div style="text-align:center;padding:20px;color:var(--muted);font-size:13px;letter-spacing:2px;">NO QUEUE ENTRIES</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══ USER SCREEN ═══ -->
+<div id="userScreen" class="screen">
+  <div class="header">
+    <div class="header-logo">S.O DISPLAY</div>
+    <div class="header-user">
+      <span class="user-name" id="displayUserName"></span>
+      <span class="badge badge-user">User</span>
+      <button class="btn btn-outline btn-sm" onclick="logout()">Exit</button>
+    </div>
+  </div>
+
+  <div class="ticker">
+    <div class="ticker-track" id="tickerTrack">
+      <span class="ticker-item">S.O CALLING SYSTEM &nbsp;·&nbsp;</span>
+      <span class="ticker-item">PLEASE LISTEN FOR YOUR <span>S.O NUMBER</span> &nbsp;·&nbsp;</span>
+      <span class="ticker-item">PROCEED TO COUNTER WHEN CALLED &nbsp;·&nbsp;</span>
+      <span class="ticker-item">S.O CALLING SYSTEM &nbsp;·&nbsp;</span>
+      <span class="ticker-item">STAY ALERT FOR YOUR <span>NUMBER</span> &nbsp;·&nbsp;</span>
+    </div>
+  </div>
+
+  <div class="user-display">
+    <div class="user-so-board">
+      <div class="user-so-number empty" id="userCurrentDisplay">- - - -</div>
+    </div>
+
+    <div class="user-queue-panel">
+      <div class="recent-label">Recent Numbers Called</div>
+      <div class="recent-chips" id="recentChips">
+        <div style="color:var(--muted);font-size:12px;letter-spacing:2px;font-family:'Share Tech Mono',monospace;">None yet...</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ TOAST ═══ -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── STATE ───
+const ADMIN_PASS = 'admin123';
+let currentView = 'login';
+let currentUser = '';
+let currentNumber = null;
+let queue = [];
+let users = ['mot.x', 'willson', 'santos', 'reyes'];
+let speechSynth = window.speechSynthesis;
+
+// ─── INIT ───
+window.onload = () => {
+  loadFromStorage();
+  populateUserSelect();
+  renderUserTable();
+  renderQueue();
+  renderUserDisplay();
+
+  // Listen for storage changes (cross-tab sync)
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'so_system_state') {
+      loadFromStorage();
+      renderUserDisplay();
+      renderQueue();
+      renderUserTable();
+      populateUserSelect();
+    }
+  });
+};
+
+function saveToStorage() {
+  const state = { queue, users, currentNumber };
+  localStorage.setItem('so_system_state', JSON.stringify(state));
+}
+
+function loadFromStorage() {
+  const saved = localStorage.getItem('so_system_state');
+  if (saved) {
+    try {
+      const state = JSON.parse(saved);
+      queue = state.queue || queue;
+      users = state.users || users;
+      currentNumber = state.currentNumber !== undefined ? state.currentNumber : currentNumber;
+    } catch(e) {}
+  }
+}
+
+// ─── TAB SWITCH ───
+function switchTab(tab) {
+  document.querySelectorAll('.login-tab').forEach((t,i) => {
+    t.classList.toggle('active', (i===0 && tab==='user') || (i===1 && tab==='admin'));
+  });
+  document.getElementById('userLoginForm').classList.toggle('active', tab==='user');
+  document.getElementById('adminLoginForm').classList.toggle('active', tab==='admin');
+  document.getElementById('userError').textContent = '';
+  document.getElementById('adminError').textContent = '';
+}
+
+// ─── LOGIN ───
+function populateUserSelect() {
+  const sel = document.getElementById('userSelect');
+  const current = sel.value;
+  sel.innerHTML = '<option value="">-- Select Name --</option>';
+  users.forEach(u => {
+    const opt = document.createElement('option');
+    opt.value = u;
+    opt.textContent = u.toUpperCase();
+    sel.appendChild(opt);
+  });
+  if (current) sel.value = current;
+}
+
+function loginUser() {
+  const name = document.getElementById('userSelect').value;
+  if (!name) { document.getElementById('userError').textContent = 'Please select your name.'; return; }
+  currentUser = name;
+  showScreen('userScreen');
+  document.getElementById('displayUserName').textContent = name.toUpperCase();
+  renderUserDisplay();
+}
+
+function loginAdmin() {
+  const pass = document.getElementById('adminPass').value;
+  if (pass !== ADMIN_PASS) {
+    document.getElementById('adminError').textContent = 'Incorrect password.';
+    document.getElementById('adminPass').value = '';
+    return;
+  }
+  currentUser = 'Admin';
+  showScreen('adminScreen');
+  renderUserTable();
+  renderQueue();
+  renderAdminDisplay();
+}
+
+function logout() {
+  currentUser = '';
+  document.getElementById('adminPass').value = '';
+  document.getElementById('userSelect').value = '';
+  document.getElementById('adminError').textContent = '';
+  document.getElementById('userError').textContent = '';
+  showScreen('loginScreen');
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  currentView = id;
+}
+
+// ─── CALL NUMBER ───
+function callNumber() {
+  const input = document.getElementById('soInput');
+  const num = input.value.trim();
+  if (!num) { showToast('Enter an S.O number first!', true); return; }
+
+  currentNumber = num;
+
+  // Add to queue
+  const entry = {
+    number: num,
+    time: new Date().toLocaleTimeString('en-US', {hour:'2-digit',minute:'2-digit',second:'2-digit'}),
+    id: Date.now()
+  };
+  queue.unshift(entry);
+  if (queue.length > 20) queue.pop();
+
+  saveToStorage();
+  renderAdminDisplay();
+  renderQueue();
+  renderUserDisplay();
+  announceNumber(num);
+  input.value = '';
+  showToast(`S.O ${num} called!`);
+}
+
+function announceNumber(num) {
+  if (!speechSynth) return;
+  speechSynth.cancel();
+
+  // Flash displays
+  ['adminCurrentDisplay','userCurrentDisplay'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); }
+  });
+
+  const digits = num.split('').join(' ');
+  const utterance = new SpeechSynthesisUtterance(
+    `S O number ${digits} is now approved by the customer.`
+  );
+  utterance.rate = 0.85;
+  utterance.pitch = 1.0;
+  utterance.volume = 1.0;
+
+  const indicator = document.getElementById('voiceIndicator');
+  const voiceStatus = document.getElementById('voiceStatus');
+
+  utterance.onstart = () => {
+    if (indicator) indicator.classList.add('speaking');
+    if (voiceStatus) voiceStatus.textContent = 'Speaking...';
+  };
+  utterance.onend = () => {
+    if (indicator) indicator.classList.remove('speaking');
+    if (voiceStatus) voiceStatus.textContent = 'Voice Ready';
+  };
+
+  speechSynth.speak(utterance);
+}
+
+// ─── RENDER FUNCTIONS ───
+function renderAdminDisplay() {
+  const display = document.getElementById('adminCurrentDisplay');
+  const status = document.getElementById('adminDisplayStatus');
+  if (!display) return;
+
+  if (currentNumber) {
+    display.textContent = currentNumber;
+    display.classList.remove('empty');
+    status.textContent = 'NOW CALLING';
+    status.style.color = 'rgba(0,255,204,0.6)';
+  } else {
+    display.textContent = '- - - -';
+    display.classList.add('empty');
+    status.textContent = 'WAITING FOR INPUT';
+    status.style.color = '';
+  }
+}
+
+function renderUserDisplay() {
+  const display = document.getElementById('userCurrentDisplay');
+  if (!display) return;
+
+  if (currentNumber) {
+    display.textContent = currentNumber;
+    display.classList.remove('empty');
+  } else {
+    display.textContent = '- - - -';
+    display.classList.add('empty');
+  }
+
+  // Recent chips
+  const chipsEl = document.getElementById('recentChips');
+  if (!chipsEl) return;
+
+  if (queue.length === 0) {
+    chipsEl.innerHTML = '<div style="color:var(--muted);font-size:12px;letter-spacing:2px;font-family:\'Share Tech Mono\',monospace;">None yet...</div>';
+    return;
+  }
+
+  chipsEl.innerHTML = '';
+  queue.slice(0, 10).forEach((item, i) => {
+    const chip = document.createElement('div');
+    chip.className = 'chip' + (i === 0 ? ' active' : '');
+    chip.textContent = item.number;
+    chipsEl.appendChild(chip);
+  });
+}
+
+function renderQueue() {
+  const queueEl = document.getElementById('adminQueue');
+  if (!queueEl) return;
+
+  if (queue.length === 0) {
+    queueEl.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);font-size:13px;letter-spacing:2px;">NO QUEUE ENTRIES</div>';
+    return;
+  }
+
+  queueEl.innerHTML = '';
+  queue.forEach((item, i) => {
+    const div = document.createElement('div');
+    div.className = 'queue-item ' + (i === 0 ? 'current' : 'pending');
+    div.innerHTML = `
+      <div class="queue-item-num">S.O ${item.number}</div>
+      <div class="queue-item-meta">
+        <span class="queue-item-time">${item.time}</span>
+        <span class="queue-status ${i === 0 ? 'status-active' : 'status-pending'}">${i === 0 ? 'ACTIVE' : 'CALLED'}</span>
+        <button class="btn-remove" onclick="removeQueueItem(${item.id})">✕</button>
+      </div>
+    `;
+    queueEl.appendChild(div);
+  });
+}
+
+function removeQueueItem(id) {
+  queue = queue.filter(q => q.id !== id);
+  if (queue.length === 0) currentNumber = null;
+  else currentNumber = queue[0].number;
+  saveToStorage();
+  renderQueue();
+  renderAdminDisplay();
+  renderUserDisplay();
+}
+
+function clearQueue() {
+  if (!confirm('Clear all queue entries?')) return;
+  queue = [];
+  currentNumber = null;
+  saveToStorage();
+  renderQueue();
+  renderAdminDisplay();
+  renderUserDisplay();
+  showToast('Queue cleared.');
+}
+
+// ─── USER MANAGEMENT ───
+function addUser() {
+  const input = document.getElementById('newUserInput');
+  const name = input.value.trim().toLowerCase();
+  if (!name) { showToast('Enter a username.', true); return; }
+  if (users.includes(name)) { showToast('User already exists!', true); return; }
+  if (name.length < 2) { showToast('Name too short.', true); return; }
+
+  users.push(name);
+  saveToStorage();
+  populateUserSelect();
+  renderUserTable();
+  input.value = '';
+  showToast(`User "${name}" added!`);
+}
+
+function removeUser(name) {
+  if (users.length <= 1) { showToast('Need at least one user.', true); return; }
+  users = users.filter(u => u !== name);
+  saveToStorage();
+  populateUserSelect();
+  renderUserTable();
+  showToast(`User "${name}" removed.`);
+}
+
+function renderUserTable() {
+  const tbody = document.getElementById('userTableBody');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+  users.forEach((u, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td style="color:var(--muted)">${i+1}</td>
+      <td><span class="online-dot"></span>${u}</td>
+      <td><span style="color:var(--muted);font-size:11px;letter-spacing:1px;">OPERATOR</span></td>
+      <td><button class="btn-remove" onclick="removeUser('${u}')">Remove</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+// ─── TOAST ───
+let toastTimer;
+function showToast(msg, isError = false) {
+  const toast = document.getElementById('toast');
+  toast.textContent = (isError ? '⚠ ' : '✓ ') + msg;
+  toast.className = 'toast show' + (isError ? ' error' : '');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
+// ─── STORAGE POLL for cross-tab sync ───
+setInterval(() => {
+  if (currentView !== 'userScreen') return;
+  const saved = localStorage.getItem('so_system_state');
+  if (!saved) return;
+  try {
+    const state = JSON.parse(saved);
+    const newNum = state.currentNumber;
+    const newQueue = state.queue || [];
+    if (newNum !== currentNumber) {
+      currentNumber = newNum;
+      queue = newQueue;
+      renderUserDisplay();
+      if (newNum) {
+        const el = document.getElementById('userCurrentDisplay');
+        if (el) { el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); }
+        announceNumber(newNum);
+      }
+    }
+  } catch(e) {}
+}, 1000);
+</script>
+</body>
+</html>
